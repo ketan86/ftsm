@@ -231,17 +231,28 @@ class Transaction:
 class FiniteStateMachine:
     """Finite State machine implementation."""
 
-    def __init__(self, states=None):
+    def __init__(self, name=None, states=None):
         """Initialize the state machine.
 
+        :param str name: optional state machine name
         :param State states: list of states
         """
+        self._name = name
         self._states = []
         # set current state to unknown.
         self._current_state = State("UNKNOWN", initial=True)
         self._prev_state = None
         for state in states or []:
             self.add(state)
+
+    @property
+    def name(self):
+        """Name of the state machine.
+
+        :return State name
+        :rtype: str
+        """
+        return self._name
 
     @property
     def current_state(self):
@@ -395,8 +406,8 @@ class TransactionalFiniteStateMachine(FiniteStateMachine):
     specified rb_conditions.
     """
 
-    def __init__(self, states=None):
-        super().__init__(states=states)
+    def __init__(self, name=None, states=None):
+        super().__init__(name, states)
         self.transaction_stack = []
 
     def _revert(self):
@@ -558,3 +569,58 @@ if __name__ == "__main__":
     #     post_transactions=[Transaction(_poll_activation_status)],
     # ):
     #     a = _activate_policy()
+
+    # class LightController:
+    #     def turn_off_light(self, room):
+    #         print('turning the {} room light off.'.format(room))
+
+    #     def turn_on_light(self, room):
+    #         print('turning the {} room light on.'.format(room))
+
+    # light_controller = LightController()
+
+    # def turn_off_water():
+    #     print('turning off the water.')
+
+    # def turn_on_water():
+    #     print('turning on the water.')
+
+    # def water_plants():
+    #     print('watering the plants.')
+
+    # def lock_the_door():
+    #     print('locking the door.')
+
+    # def unlock_the_door():
+    #     print('unlocking the door.')
+
+    # UNLOCKED = State('UNLOCKED', initial=True, allowed_transitions=['LOCKED'])
+    # LOCKED = State('LOCKED', initial=False, allowed_transitions=['UNLOCKED'])
+
+    # tsm = TransactionalFiniteStateMachine(name='Lock')
+    # tsm.add(LOCKED)
+    # tsm.add(UNLOCKED)
+
+    # light_transaction = Transaction(
+    #     target=light_controller.turn_off_light,
+    #     args=('Living',),
+    #     rb_transactions=[
+    #         Transaction(target=light_controller.turn_on_light,
+    #                     args=('Living',))
+    #     ])
+
+    # water_transaction = Transaction(
+    #     target=turn_off_water,
+    #     rb_transactions=[
+    #         Transaction(target=turn_on_water)
+    #     ]
+    # )
+
+    # with tsm.managed_transition(
+    #         state=LOCKED,
+    #         pre_transactions=[light_transaction, water_transaction],
+    #         on_error_transactions=[Transaction(unlock_the_door)],
+    #         post_transactions=[Transaction(water_plants)]):
+    #     lock_the_door()
+
+    # print(tsm.current_state)
