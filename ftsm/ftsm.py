@@ -235,14 +235,14 @@ class FiniteStateMachine:
         """Initialize the state machine.
 
         :param str name: optional state machine name
-        :param State states: list of states
+        :param list<State> states: list of states
         """
         self._name = name
         self._states = []
         # set current state to unknown.
         self._current_state = State("UNKNOWN", initial=True)
         self._prev_state = None
-        for state in states or []:
+        for state in (states or []):
             self.add(state)
 
     @property
@@ -277,7 +277,6 @@ class FiniteStateMachine:
 
         if state.is_initial():
             self._current_state = state
-
         logger.info("Adding a state %s to a state machine.", state)
         self._states.append(state)
 
@@ -323,9 +322,8 @@ class FiniteStateMachine:
         :return True if transition is allowed, False otherwise
         :rtype: bool
         """
-        if to_state in from_state.allowed_transitions or self._check_if_next(
-            to_state
-        ):
+        if to_state in from_state.allowed_transitions or \
+                self._check_if_next(to_state):
             return True
 
         return False
@@ -421,13 +419,11 @@ class TransactionalFiniteStateMachine(FiniteStateMachine):
                 rb_transaction()
 
     @contextlib.contextmanager
-    def managed_transition(
-        self,
-        state,
-        pre_transactions=None,
-        post_transactions=None,
-        on_error_transactions=None,
-    ):
+    def managed_transition(self,
+                           state,
+                           pre_transactions=None,
+                           post_transactions=None,
+                           on_error_transactions=None):
         """Transition to the give state with transactions. Revert the state
         in case of.
 
@@ -594,7 +590,8 @@ if __name__ == "__main__":
     # def unlock_the_door():
     #     print('unlocking the door.')
 
-    # UNLOCKED = State('UNLOCKED', initial=True, allowed_transitions=['LOCKED'])
+    # UNLOCKED = State(
+    # 'UNLOCKED', initial=True, allowed_transitions=['LOCKED'])
     # LOCKED = State('LOCKED', initial=False, allowed_transitions=['UNLOCKED'])
 
     # tsm = TransactionalFiniteStateMachine(name='Lock')

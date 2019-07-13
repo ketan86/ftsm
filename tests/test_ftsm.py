@@ -1,15 +1,10 @@
 import logging
 import unittest
-from unittest.mock import patch, MagicMock, ANY, DEFAULT
+from unittest.mock import ANY, DEFAULT, MagicMock, patch
 
-from ftsm.ftsm import (State, Condition,
-                       ExceptionCondition,
-                       FiniteStateMachine,
-                       TransactionalFiniteStateMachine,
-                       StateTransitionError,
-                       FiniteStateMachineError,
-                       Transaction)
-
+from ftsm.ftsm import (Condition, ExceptionCondition, FiniteStateMachine,
+                       FiniteStateMachineError, State, StateTransitionError,
+                       Transaction, TransactionalFiniteStateMachine)
 
 logging.disable(logging.ERROR)
 
@@ -182,7 +177,7 @@ class TestFiniteStateMachine(unittest.TestCase):
 
     def test_state_machine_init(self):
         states = [State('1'), State('2'), State('3')]
-        sm = FiniteStateMachine(states)
+        sm = FiniteStateMachine(states=states)
 
         self.assertEqual(sm.current_state,
                          State('UNKNOWN'))
@@ -193,13 +188,13 @@ class TestFiniteStateMachine(unittest.TestCase):
 
     def test_state_machine_transition(self):
         states = [State('1'), State('2'), State('3')]
-        sm = FiniteStateMachine(states)
+        sm = FiniteStateMachine(states=states)
         sm.transition(states[0])
         self.assertEqual(sm.current_state, states[0])
 
     def test_state_machine_transition_revert(self):
         states = [State('1'), State('2'), State('3')]
-        sm = FiniteStateMachine(states)
+        sm = FiniteStateMachine(states=states)
         sm.transition(states[0])
         sm._revert()
         self.assertEqual(sm.current_state, State('UNKNOWN'))
@@ -213,15 +208,13 @@ class TestFiniteStateMachine(unittest.TestCase):
 
     def test_state_machine_repr_unknown(self):
         sm = FiniteStateMachine()
-
         self.assertEqual(
             str(sm),
             '<FiniteStateMachine states=[] current_state=<State name=UNKNOWN initial=True>>')
 
     def test_state_machine_repr(self):
-        sm = FiniteStateMachine(
+        sm = FiniteStateMachine(states=
             [State('1', initial=True), State('2'), State('3')])
-
         self.assertEqual(
             str(sm),
             '<FiniteStateMachine states=[<State name=1 initial=True>, <State name=2 initial=False>, '
@@ -230,7 +223,7 @@ class TestFiniteStateMachine(unittest.TestCase):
     def test_tsm_before_transactions_positive(self):
         callable_func_mock = MagicMock()
         states = [State('1'), State('2'), State('3')]
-        sm = TransactionalFiniteStateMachine(states)
+        sm = TransactionalFiniteStateMachine(states=states)
         with sm.managed_transition(states[0],
                                    pre_transactions=[Transaction(
                                        target=callable_func_mock,
@@ -247,7 +240,7 @@ class TestFiniteStateMachine(unittest.TestCase):
         callable_func_mock.side_effect = Exception('Failed')
         states = [State('1', initial=True, allowed_transitions=['2']),
                   State('2'), State('3')]
-        sm = TransactionalFiniteStateMachine(states)
+        sm = TransactionalFiniteStateMachine(states=states)
         with self.assertRaisesRegex(
                 Exception, 'Failed'):
             with sm.managed_transition(states[1],
@@ -271,7 +264,7 @@ class TestFiniteStateMachine(unittest.TestCase):
             'On Exceptions Rollback Error.')
         callable_func_2_mock = MagicMock()
         states = [State('1'), State('2'), State('3')]
-        sm = TransactionalFiniteStateMachine(states)
+        sm = TransactionalFiniteStateMachine(states=states)
         with self.assertRaisesRegex(
                 Exception, 'On Exceptions Rollback Error.'):
             with sm.managed_transition(states[0],
@@ -294,7 +287,7 @@ class TestFiniteStateMachine(unittest.TestCase):
         callable_func_mock.side_effect = Exception(
             'On Exceptions Rollback Error.')
         states = [State('1'), State('2'), State('3')]
-        sm = TransactionalFiniteStateMachine(states)
+        sm = TransactionalFiniteStateMachine(states=states)
         with self.assertRaisesRegex(
                 Exception, 'Error during transition'):
             with sm.managed_transition(states[0]):
@@ -308,7 +301,7 @@ class TestFiniteStateMachine(unittest.TestCase):
             'On Exceptions Rollback Error.')
         callable_func_2_mock = MagicMock()
         states = [State('1'), State('2', initial=True), State('3')]
-        sm = TransactionalFiniteStateMachine(states)
+        sm = TransactionalFiniteStateMachine(states=states)
         with self.assertRaisesRegex(
                 Exception, 'On Exceptions Rollback Error.'):
             with sm.managed_transition(states[2],
